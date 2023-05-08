@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<numDisparities>48</numDisparities>
+<blockSize>19</blockSize>
+<preFilterType>0</preFilterType>
+<preFilterSize>33</preFilterSize>
+<preFilterCap>13</preFilterCap>
+<textureThreshold>10</textureThreshold>
+<uniquenessRatio>24</uniquenessRatio>
+<speckleRange>26</speckleRange>
+<speckleWindowSize>8</speckleWindowSize>
+<disp12MaxDiff>5</disp12MaxDiff>
+<minDisparity>3</minDisparity>
+<M>3.9075000000000003e+01</M>
+</opencv_storage>
