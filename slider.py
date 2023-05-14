@@ -55,6 +55,13 @@ while True:
 	if retL and retR:
 		imgR_gray = cv2.cvtColor(imgR,cv2.COLOR_BGR2GRAY)
 		imgL_gray = cv2.cvtColor(imgL,cv2.COLOR_BGR2GRAY)
+		kernel_size = (5, 5)
+		# gray_histeqL = cv2.equalizeHist(imgL_gray)
+		# gray_histeqR = cv2.equalizeHist(imgR_gray)
+		imgL_gray = cv2.GaussianBlur(imgL_gray, kernel_size, 0)
+		# #imgL_gray = cv2.resize(imgL_gray,(640,360))
+		imgR_gray = cv2.GaussianBlur(imgR_gray, kernel_size, 0)
+		# #imgR_gray = cv2.resize(imgR_gray,(640,360))
 
 		# Applying stereo image rectification on the left image
 		Left_nice= cv2.remap(imgL_gray, Left_Stereo_Map_x, Left_Stereo_Map_y, cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT,0)
@@ -98,6 +105,26 @@ while True:
 
 		# Converting to float32 
 		disparity = disparity.astype(np.float32)
+		focal_length = 1.42507111e+03
+		depth = (12*focal_length)/(disparity+1e-6)
+
+		distance = depth[710,640]
+		font = cv2.FONT_HERSHEY_SIMPLEX
+		fontScale = 1
+		color = (255,0,0)
+		thickness = 2
+		if distance <= 50:
+
+			cv2.putText(disparity, 'warning pose', (100, 700), font, 
+						fontScale, color, thickness, cv2.LINE_AA)
+		else:
+
+			cv2.putText(disparity, 'safe distance', (100, 700), font, 
+						fontScale, color, thickness, cv2.LINE_AA)
+		cv2.putText(disparity, str(distance), (50, 50), font, 
+						fontScale, color, thickness, cv2.LINE_AA)
+		cv2.putText(disparity, str(disparity[710,640]), (50, 100), font, 
+						fontScale, color, thickness, cv2.LINE_AA)
 
 		# Scaling down the disparity values and normalizing them 
 		disparity = (disparity/16.0 - minDisparity)/numDisparities
@@ -105,36 +132,6 @@ while True:
 		# Displaying the disparity map
 		cv2.imshow("disp",disparity)
 
-				# Calculating disparity using the StereoBM algorithm
-		disparity = stereo.compute(Left_nice,Right_nice)
-
-		# Converting to float32 
-		disparity = disparity.astype(np.float32)
-
-		# Scaling down the disparity values and normalizing them 
-		disparity = (disparity/16.0 - minDisparity)/numDisparities
-		
-		max_dist = 230 # max distance to keep the target object (in cm)
-		min_dist = 50 # Minimum distance the stereo setup can measure (in cm)
-		sample_delta = 40 # Distance between two sampling points (in cm)
-		Z = max_dist 
-
-		Value_pairs = []
-		y,x = 360, 640
-		value_pairs = np.array(Value_pairs)
-		z = value_pairs[:,0]
-		disp = value_pairs[:,1]
-		disp_inv = 1/disp
-
-		if disparity[y,x] > 0:
-			Value_pairs.append([Z,disparity[y,x]])
-			message = "Distance: {} cm  | Disparity: {}.".format(Z,disparity[y,x])
-			cv2.putText(message,(50,50),1,5,(255,0,255),10)
-			Z-=sample_delta
-
-		
-		# if Z < min_dist:
-			
 		# Close window using esc key
 		if cv2.waitKey(1) == 27:
 			break

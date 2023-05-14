@@ -32,26 +32,30 @@ Value_pairs = []
 
 disp_map = np.zeros((600,600,3))
 
-# Reading the stored the StereoBM parameters
-cv_file = cv2.FileStorage("./data/depth_estmation_params_py.xml", cv2.FILE_STORAGE_READ)
+# Reading the stored the parameters
+cv_file = cv2.FileStorage("./data/disp_params.xml", cv2.FILE_STORAGE_READ)
+
 numDisparities = int(cv_file.getNode("numDisparities").real())
 blockSize = int(cv_file.getNode("blockSize").real())
-preFilterType = int(cv_file.getNode("preFilterType").real())
-preFilterSize = int(cv_file.getNode("preFilterSize").real())
+# preFilterType = int(cv_file.getNode("preFilterType").real())
+# preFilterSize = int(cv_file.getNode("preFilterSize").real())
 preFilterCap = int(cv_file.getNode("preFilterCap").real())
-textureThreshold = int(cv_file.getNode("textureThreshold").real())
+# textureThreshold = int(cv_file.getNode("textureThreshold").real())
 uniquenessRatio = int(cv_file.getNode("uniquenessRatio").real())
 speckleRange = int(cv_file.getNode("speckleRange").real())
 speckleWindowSize = int(cv_file.getNode("speckleWindowSize").real())
 disp12MaxDiff = int(cv_file.getNode("disp12MaxDiff").real())
 minDisparity = int(cv_file.getNode("minDisparity").real())
 M = cv_file.getNode("M").real()
+
+
+
 cv_file.release()
 
 # Defining callback functions for mouse events
 def mouse_click(event,x,y,flags,param):
 	global Z
-	if event == cv2.EVENT_LBUTTONDBLCLK:
+	if event == cv2.EVENT_MBUTTONDBLCLK:
 		if disparity[y,x] > 0:
 			Value_pairs.append([Z,disparity[y,x]])
 			print("Distance: %r cm  | Disparity: %r"%(Z,disparity[y,x]))
@@ -65,7 +69,7 @@ cv2.resizeWindow('left image',600,600)
 cv2.setMouseCallback('disp',mouse_click)
 
 # Creating an object of StereoBM algorithm
-stereo = cv2.StereoBM_create()
+stereo = cv2.StereoSGBM_create()
 
 while True:
 
@@ -97,27 +101,26 @@ while True:
 		# Setting the updated parameters before computing disparity map
 		stereo.setNumDisparities(numDisparities)
 		stereo.setBlockSize(blockSize)
-		stereo.setPreFilterType(preFilterType)
-		stereo.setPreFilterSize(preFilterSize)
+		# stereo.setPreFilterType(preFilterType)
+		# stereo.setPreFilterSize(preFilterSize)
 		stereo.setPreFilterCap(preFilterCap)
-		stereo.setTextureThreshold(textureThreshold)
+		# stereo.setTextureThreshold(textureThreshold)
 		stereo.setUniquenessRatio(uniquenessRatio)
 		stereo.setSpeckleRange(speckleRange)
 		stereo.setSpeckleWindowSize(speckleWindowSize)
 		stereo.setDisp12MaxDiff(disp12MaxDiff)
 		stereo.setMinDisparity(minDisparity)
-
+		
 		# Calculating disparity using the StereoBM algorithm
 		disparity = stereo.compute(Left_nice,Right_nice)
-		# NOTE: compute returns a 16bit signed single channel image,
-		# CV_16S containing a disparity map scaled by 16. Hence it 
-		# is essential to convert it to CV_16S and scale it down 16 times.
 
 		# Converting to float32 
 		disparity = disparity.astype(np.float32)
 
 		# Scaling down the disparity values and normalizing them 
 		disparity = (disparity/16.0 - minDisparity)/numDisparities
+
+		
 
 		# Displaying the disparity map
 		cv2.imshow("disp",disparity)
@@ -169,10 +172,10 @@ print("Value of M = ",M)
 cv_file = cv2.FileStorage("../data/depth_estmation_params_py.xml", cv2.FILE_STORAGE_WRITE)
 cv_file.write("numDisparities",numDisparities)
 cv_file.write("blockSize",blockSize)
-cv_file.write("preFilterType",preFilterType)
-cv_file.write("preFilterSize",preFilterSize)
+# cv_file.write("preFilterType",preFilterType)
+# cv_file.write("preFilterSize",preFilterSize)
 cv_file.write("preFilterCap",preFilterCap)
-cv_file.write("textureThreshold",textureThreshold)
+# cv_file.write("textureThreshold",textureThreshold)
 cv_file.write("uniquenessRatio",uniquenessRatio)
 cv_file.write("speckleRange",speckleRange)
 cv_file.write("speckleWindowSize",speckleWindowSize)
